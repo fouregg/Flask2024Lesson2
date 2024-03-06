@@ -2,7 +2,9 @@
 
 
 {% block content %}
-    {% if user %}
+    {% if text %}
+        <h1>{{ text }}</h1>
+    {% elif user %}
         <h1>Hello, {{ user.username }}</h1>
     {% else %}
         <h1>Hello Stranger</h1>
