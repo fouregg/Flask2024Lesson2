@@ -1,9 +1,10 @@
 from flask import render_template, redirect, url_for, session, abort
 from app.forms import SimpleForm
 from models import Role, User
-
+from flask_mail import Message
 from app import flask_app
-
+from . import mail
+import os.path
 
 @flask_app.route('/')
 @flask_app.route('/index')
@@ -33,11 +34,10 @@ def testForm():
     text = None
     form = SimpleForm()
     if form.validate_on_submit():
-        print(form.username.data)
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None:
-            print("Test")
             session['auth'] = True
+            confirm(user)
         else:
             session['auth'] = False
         return redirect(url_for('index'))
@@ -48,3 +48,18 @@ def logout():
     if session.get('auth'):
         session['auth'] = False
     return redirect(url_for('index'))
+
+def confirm(user):
+    print("Test")
+    send_mail("alexey.belousov.site@gmail.com", 'Create new user from Flask', 'send_mail', user=user)
+    redirect(url_for('index'))
+
+def send_mail(to, subject, template, **kwargs):
+    print(flask_app.config['MAIL_USERNAME'])
+    msg = Message(subject,
+                  sender=flask_app.config['MAIL_USERNAME'],
+                  recipients=[to])
+    msg.html = render_template(template + ".html", **kwargs)
+    msg.body = render_template(template+".txt", **kwargs)
+
+    mail.send(msg)
